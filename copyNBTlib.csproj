@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6F06F0F9-76FF-467F-90E3-2B01318B0149}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>copyNBTlib</RootNamespace>
+    <AssemblyName>copyNBTlib</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TagBase.cs" />
+    <Compile Include="TagPrimitive.cs" />
+    <Compile Include="TagType.cs" />
+    <Compile Include="IO\EndianBinaryReader.cs" />
+    <Compile Include="IO\EndianBinaryWriter.cs" />
+    <Compile Include="IO\Endianness.cs" />
+    <Compile Include="TagCompound.cs" />
+    <Compile Include="TagList.cs" />
+    <Compile Include="Compression\NbtCompression.cs" />
+    <Compile Include="Text\INbtFormatter.cs" />
+    <Compile Include="Text\NbtFormatterNotch.cs" />
+    <Compile Include="Text\NbtFormatterJson.cs" />
+    <Compile Include="Utility\TagTypeHelper.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="IO\" />
+    <Folder Include="Compression\" />
+    <Folder Include="Text\" />
+    <Folder Include="Utility\" />
+  </ItemGroup>
+</Project>
