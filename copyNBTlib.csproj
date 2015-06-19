@@ -46,6 +46,7 @@
     <Compile Include="Text\NbtFormatterNotch.cs" />
     <Compile Include="Text\NbtFormatterJson.cs" />
     <Compile Include="Utility\TagTypeHelper.cs" />
+    <Compile Include="Text\MUTF8Encoding.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

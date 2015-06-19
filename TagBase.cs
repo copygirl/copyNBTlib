@@ -251,7 +251,7 @@ namespace copyNBTlib
 		{
 			var length = reader.ReadUInt16();
 			var bytes = reader.ReadBytes(length);
-			return Encoding.UTF8.GetString(bytes);
+			return MUTF8Encoding.Instance.GetString(bytes);
 		}
 
 		#endregion
@@ -283,12 +283,12 @@ namespace copyNBTlib
 		public abstract void WritePayload(BinaryWriter writer);
 
 		/// <summary>
-		/// Writes an NBT-conform (UTF-8) string, prefixed
+		/// Writes an NBT-conform (Modified UTF-8) string, prefixed
 		/// with its length in bytes as an unsigned short.
 		/// </summary>
 		internal static void WriteString(BinaryWriter writer, string str)
 		{
-			var bytes = Encoding.UTF8.GetBytes(str);
+			var bytes = MUTF8Encoding.Instance.GetBytes(str);
 			writer.Write((ushort)bytes.Length);
 			writer.Write(bytes);
 		}
