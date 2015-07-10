@@ -8,7 +8,7 @@ namespace copyNBTlib.Text
 	/// Formatter for turning NBT tags into a string representation
 	/// very similar to the one in Notch's original NBT specification.
 	/// </summary>
-	class NbtFormatterNotch : INbtFormatter
+	public class NbtFormatterNotch : INbtFormatter
 	{
 		public static readonly NbtFormatterNotch Single = new NbtFormatterNotch();
 		public static readonly NbtFormatterNotch All = new NbtFormatterNotch(int.MaxValue);

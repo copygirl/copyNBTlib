@@ -9,7 +9,7 @@ namespace copyNBTlib.Text
 	/// Formatter for turning NBT tags into valid JSON value strings.
 	/// This works for tags other than just compounds.
 	/// </summary>
-	class NbtFormatterJson : INbtFormatter
+	public class NbtFormatterJson : INbtFormatter
 	{
 		static readonly int MultilineArrayMinElements = 16;
 		static readonly int MultilineArrayElementsPerLine = 10;
