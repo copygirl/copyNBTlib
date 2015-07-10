@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using copyNBTlib.IO;
 
 namespace copyNBTlib
 {
@@ -33,8 +34,8 @@ namespace copyNBTlib
 		public TagType? ListType {
 			get { return _listType ?? ((Count > 0) ? this[0].Type : default(TagType?)); }
 			set {
-				if (!_listType.HasValue)
-					throw new ArgumentNullException("value", "Can't set ListType to null, set Dynamic to false instead");
+				if (!value.HasValue)
+					throw new ArgumentNullException("value", "Can't set ListType to null, set Dynamic to true instead");
 				if (Count > 0)
 					throw new InvalidOperationException("Can't change ListType while list isn't empty");
 				_listType = value;
@@ -53,14 +54,12 @@ namespace copyNBTlib
 
 		#region TagBase implementation (read / write payload)
 
-		public override void ReadPayload(BinaryReader reader)
+		public override void ReadPayload(NBTStreamReader reader)
 		{
 			Clear();
 
-			var type = ReadTagType(reader);
-			ValidateTagTypeIDE(type, true);
-
-			int count = reader.ReadInt32();
+			var type = reader.ReadTagType();
+			int count = reader.ReadInt();
 			if ((type == TagType.End) && (Count > 0))
 				throw new InvalidDataException("List tag with ListType of 'End' isn't empty");
 			_tags.Capacity = count;
@@ -74,9 +73,9 @@ namespace copyNBTlib
 			}
 		}
 
-		public override void WritePayload(BinaryWriter writer)
+		public override void WritePayload(NBTStreamWriter writer)
 		{
-			WriteTagType(writer, ListType ?? TagType.End);
+			writer.Write(ListType ?? TagType.End);
 			writer.Write(Count);
 			foreach (var tag in this)
 				tag.WritePayload(writer);
@@ -166,8 +165,8 @@ namespace copyNBTlib
 			if (tag == null)
 				throw new ArgumentNullException("tag");
 			if (ListType.HasValue && (ListType.Value != tag.Type))
-				throw new ArgumentException("tag", string.Format(
-					"Can't add tag of type '{0}' to list of type '{1}'", tag.Type, ListType));
+				throw new ArgumentException(string.Format(
+					"Can't add tag of type '{0}' to list of type '{1}'", tag.Type, ListType), "tag");
 			return tag;
 		}
 	}

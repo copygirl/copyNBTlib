@@ -106,64 +106,79 @@ namespace copyNBTlib
 		/// <param name="file">File to load from.</param>
 		/// <param name="name">Will be set to the name of the root tag.</param>
 		/// <param name="compression">The compression to use, null or default to auto-detect.</param>
-		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		/// <param name="encoding">The encoding to use for strings. Uses Java's weird MUTF8 encoding by default.</param>
 		/// <param name="endianness">The endianness to use. PC = Big, Pocket Edition = Little.</param>
-		public static TagBase Load(string file, out string name, NbtCompression compression = null,
-			                       bool ensureCompound = true, Endianness endianness = Endianness.Big)
+		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		public static TagBase Load(string file, out string name,
+			NbtCompression compression = null, Encoding encoding = null,
+			Endianness endianness = Endianness.Big, bool ensureCompound = true)
 		{
 			using (var stream = File.OpenRead(file))
-				return Load(stream, out name, compression, ensureCompound, endianness);
+				return ReadFrom(stream, out name, compression, encoding, endianness, ensureCompound);
 		}
+
 		/// <summary>
 		/// Loads an NBT tag from a file.
 		/// Shorthand for ignoring the tag name.
 		/// </summary>
 		/// <param name="file">File to load from.</param>
 		/// <param name="compression">The compression to use, null or default to auto-detect.</param>
-		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		/// <param name="encoding">The encoding to use for strings. Uses Java's weird MUTF8 encoding by default.</param>
 		/// <param name="endianness">The endianness to use. PC = Big, Pocket Edition = Little.</param>
-		public static TagBase Load(string file, NbtCompression compression = null,
-		                           bool ensureCompound = true, Endianness endianness = Endianness.Big)
+		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		public static TagBase Load(string file,
+			NbtCompression compression = null, Encoding encoding = null,
+			Endianness endianness = Endianness.Big, bool ensureCompound = true)
 		{
 			string name;
-			return Load(file, out name, compression, ensureCompound, endianness);
+			return Load(file, out name, compression, encoding, endianness, ensureCompound);
 		}
 
+
 		/// <summary>
-		/// Loads an NBT tag from a stream.
+		/// Reads an NBT tag from a stream.
 		/// </summary>
 		/// <param name="stream">The stream to load from.</param>
 		/// <param name="name">Will be set to the name of the root tag.</param>
 		/// <param name="compression">The compression to use, null or default to auto-detect.</param>
-		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		/// <param name="encoding">The encoding to use for strings. Uses Java's weird MUTF8 encoding by default.</param>
 		/// <param name="endianness">The endianness to use. PC = Big, Pocket Edition = Little.</param>
-		public static TagBase Load(Stream stream, out string name, NbtCompression compression = null,
-		                           bool ensureCompound = true, Endianness endianness = Endianness.Big)
+		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		public static TagBase ReadFrom(Stream stream, out string name,
+			NbtCompression compression = null, Encoding encoding = null,
+			Endianness endianness = Endianness.Big, bool ensureCompound = true)
 		{
+			if (stream == null)
+				throw new ArgumentNullException("stream");
+
 			compression = compression ?? NbtCompression.AutoDetect(stream);
-			using (stream = compression.Decompress(stream))
-			using (var reader = new EndianBinaryReader(stream, endianness)) {
-				var type = ReadTagType(reader);
-				ValidateTagTypeIDE(type);
+			encoding = encoding ?? MUTF8Encoding.Instance;
+
+			using (stream = compression.Decompress(stream)) {
+				var reader = new NBTStreamReader(stream, encoding, endianness);
+				var type = reader.ReadTagType();
 				if (ensureCompound && (type != TagType.Compound))
 					throw new InvalidDataException("Root tag is not a compound");
-				name = ReadString(reader);
-				return Read(reader, type);
+				name = reader.ReadString();
+				return reader.ReadTag(type);
 			}
 		}
+
 		/// <summary>
-		/// Loads an NBT tag from a stream.
+		/// Reads an NBT tag from a stream.
 		/// Shorthand for ignoring the tag name.
 		/// </summary>
 		/// <param name="stream">The stream to load from.</param>
 		/// <param name="compression">The compression to use, null or default to auto-detect.</param>
-		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		/// <param name="encoding">The encoding to use for strings. Uses Java's weird MUTF8 encoding by default.</param>
 		/// <param name="endianness">The endianness to use. PC = Big, Pocket Edition = Little.</param>
-		public static TagBase Load(Stream stream, NbtCompression compression = null,
-			bool ensureCompound = true, Endianness endianness = Endianness.Big)
+		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		public static TagBase ReadFrom(Stream stream,
+			NbtCompression compression = null, Encoding encoding = null,
+			Endianness endianness = Endianness.Big, bool ensureCompound = true)
 		{
 			string name;
-			return Load(stream, out name, compression, ensureCompound, endianness);
+			return ReadFrom(stream, out name, compression, encoding, endianness, ensureCompound);
 		}
 
 		#endregion
@@ -176,121 +191,57 @@ namespace copyNBTlib
 		/// <param name="file">File to save to.</param>
 		/// <param name="name">Name of the root tag.</param>
 		/// <param name="compression">The compression to use.</param>
-		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		/// <param name="encoding">The encoding to use for strings. Uses Java's weird MUTF8 encoding by default.</param>
 		/// <param name="endianness">The endianness to use. PC = Big, Pocket Edition = Little.</param>
-		public void Save(string file, string name, NbtCompression compression,
-		                 bool ensureCompound = true, Endianness endianness = Endianness.Big)
+		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		public void Save(string file, string name,
+			NbtCompression compression, Encoding encoding = null,
+			Endianness endianness = Endianness.Big, bool ensureCompound = true)
 		{
 			using (var stream = File.Open(file, FileMode.OpenOrCreate))
-				Save(stream, name, compression, ensureCompound, endianness);
+				WriteTo(stream, name, compression, encoding, endianness, ensureCompound);
 		}
 
 		/// <summary>
-		/// Saves an NBT tag to a stream.
+		/// Writes an NBT tag to a stream.
 		/// </summary>
 		/// <param name="stream">Stream to save to.</param>
 		/// <param name="name">Name of the root tag.</param>
 		/// <param name="compression">The compression to use.</param>
-		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		/// <param name="encoding">The encoding to use for strings. Uses Java's weird MUTF8 encoding by default.</param>
 		/// <param name="endianness">The endianness to use. PC = Big, Pocket Edition = Little.</param>
-		public void Save(Stream stream, string name, NbtCompression compression,
-			bool ensureCompound = true, Endianness endianness = Endianness.Big)
+		/// <param name="ensureCompound">If true, throws an exception if the root tag isn't a compound.</param>
+		public void WriteTo(Stream stream, string name,
+			NbtCompression compression, Encoding encoding = null,
+			Endianness endianness = Endianness.Big, bool ensureCompound = true)
 		{
 			if (name == null)
 				throw new ArgumentNullException("name");
 			if (ensureCompound && (Type != TagType.Compound))
 				throw new NotSupportedException("Root tag is not a compound");
 
-			using (stream = compression.Compress(stream))
-			using (var writer = new EndianBinaryWriter(stream, endianness))
-				Write(writer, name);
+			encoding = encoding ?? MUTF8Encoding.Instance;
+
+			using (stream = compression.Compress(stream)) {
+				var writer = new NBTStreamWriter(stream, encoding, endianness);
+				writer.Write(this, name);
+			}
 		}
 
 		#endregion
 
 
-		#region Reading NBT tags
-
-		/// <summary>
-		/// Reads a full NBT tag, including its name.
-		/// </summary>
-		public static TagBase Read(BinaryReader reader, out string name)
-		{
-			var type = ReadTagType(reader);
-			name = ReadString(reader);
-			return Read(reader, type);
-		}
-
-		/// <summary>
-		/// Reads an NBT tag of a given tag type.
-		/// </summary>
-		public static TagBase Read(BinaryReader reader, TagType type)
-		{
-			ValidateTagTypeIDE(type);
-			var tag = CreateTagFromType(type);
-			tag.ReadPayload(reader);
-			return tag;
-		}
-
-		public static TagType ReadTagType(BinaryReader reader)
-		{
-			return (TagType)reader.ReadByte();
-		}
+		#region Reading / writing payload
 
 		/// <summary>
 		/// Reads the payload (data) of this NBT tag.
 		/// </summary>
-		public abstract void ReadPayload(BinaryReader reader);
-
-		/// <summary>
-		/// Reads an NBT-conform (UTF-8) string, prefixed
-		/// with its length in bytes as an unsigned short.
-		/// </summary>
-		internal static string ReadString(BinaryReader reader)
-		{
-			var length = reader.ReadUInt16();
-			var bytes = reader.ReadBytes(length);
-			return MUTF8Encoding.Instance.GetString(bytes);
-		}
-
-		#endregion
-
-		#region Writing NBT tags
-
-		/// <summary>
-		/// Writes a full NBT tag including the type, name and actual payload.
-		/// </summary>
-		public void Write(BinaryWriter writer, string name)
-		{
-			WriteTagType(writer);
-			WriteString(writer, name);
-			WritePayload(writer);
-		}
-
-		public static void WriteTagType(BinaryWriter writer, TagType type)
-		{
-			writer.Write((byte)type);
-		}
-		public void WriteTagType(BinaryWriter writer)
-		{
-			WriteTagType(writer, Type);
-		}
+		public abstract void ReadPayload(NBTStreamReader reader);
 
 		/// <summary>
 		/// Writes the payload (data) of this NBT tag.
 		/// </summary>
-		public abstract void WritePayload(BinaryWriter writer);
-
-		/// <summary>
-		/// Writes an NBT-conform (Modified UTF-8) string, prefixed
-		/// with its length in bytes as an unsigned short.
-		/// </summary>
-		internal static void WriteString(BinaryWriter writer, string str)
-		{
-			var bytes = MUTF8Encoding.Instance.GetBytes(str);
-			writer.Write((ushort)bytes.Length);
-			writer.Write(bytes);
-		}
+		public abstract void WritePayload(NBTStreamWriter writer);
 
 		#endregion
 
@@ -346,9 +297,12 @@ namespace copyNBTlib
 		/// </summary>
 		public static TagBase CreateTagFromType(TagType type)
 		{
-			ValidateTagTypeAE(type);
+			if (!type.IsValid())
+				throw new ArgumentException(string.Format(
+					"Invalid NBT tag type 0x{0:X}", type), "type");
 			return _constructorLookup[(byte)type - 1]();
 		}
+
 		static readonly Func<TagBase>[] _constructorLookup = {
 			() => new TagByte(),
 			() => new TagShort(),
@@ -365,26 +319,6 @@ namespace copyNBTlib
 
 
 		/// <summary>
-		/// Thrown an ArgumentException if the tag type isn't a valid NBT tag type.
-		/// </summary>
-		public static TagType ValidateTagTypeAE(TagType type, bool allowEnd = false, string paramName = "type")
-		{
-			if (!type.IsValid(allowEnd))
-				throw new ArgumentException(paramName, string.Format("Invalid NBT tag type 0x{0:X2}", type));
-			return type;
-		}
-		/// <summary>
-		/// Thrown an InvalidDataException if the tag type isn't a valid NBT tag type.
-		/// </summary>
-		public static TagType ValidateTagTypeIDE(TagType type, bool allowEnd = false)
-		{
-			if (!type.IsValid(allowEnd))
-				throw new InvalidDataException(string.Format("Invalid NBT tag type 0x{0:X2}", type));
-			return type;
-		}
-
-
-		/// <summary>
 		/// Returns an new instance of a NotSupportedException to be
 		/// thrown in shorthand methods if the tag type is incorrect.
 		/// </summary>
@@ -394,6 +328,7 @@ namespace copyNBTlib
 				"Tag expected to be {0} for this operation, but is '{1}'",
 				string.Join(" or ", expectedTypes.Select(t => "'" + t + "'")), Type));
 		}
+
 		/// <summary>
 		/// Returns an new instance of a NotSupportedException to be
 		/// thrown in shorthand methods if the tag type is incorrect.

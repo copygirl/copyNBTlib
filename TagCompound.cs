@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using copyNBTlib.IO;
 
 namespace copyNBTlib
 {
@@ -14,29 +15,27 @@ namespace copyNBTlib
 
 		#region TagBase implementation (read / write payload)
 
-		public override void ReadPayload(BinaryReader reader)
+		public override void ReadPayload(NBTStreamReader reader)
 		{
 			Clear();
 			TagType type;
-			while ((type = ReadTagType(reader)) != TagType.End) {
-				ValidateTagTypeIDE(type);
-				var name = ReadString(reader);
-				var tag = CreateTagFromType(type);
-				tag.ReadPayload(reader);
-				this[name] = tag;
+			while ((type = reader.ReadTagType(true)) != TagType.End) {
+				var name = reader.ReadString();
+				if (ContainsKey(name))
+					throw new InvalidDataException(string.Format(
+						"Multiple occurance of key '{0}' in compound", name));
+				this[name] = reader.ReadTag(type);
 			}
 		}
 
-		public override void WritePayload(BinaryWriter writer)
+		public override void WritePayload(NBTStreamWriter writer)
 		{
 			foreach (var nameTagPair in this) {
 				var name = nameTagPair.Key;
 				var tag = nameTagPair.Value;
-				tag.WriteTagType(writer);
-				WriteString(writer, name);
-				tag.WritePayload(writer);
+				writer.Write(tag, name);
 			}
-			WriteTagType(writer, TagType.End);
+			writer.Write(TagType.End, true);
 		}
 
 		#endregion

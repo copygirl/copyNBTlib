@@ -36,8 +36,6 @@
     <Compile Include="TagBase.cs" />
     <Compile Include="TagPrimitive.cs" />
     <Compile Include="TagType.cs" />
-    <Compile Include="IO\EndianBinaryReader.cs" />
-    <Compile Include="IO\EndianBinaryWriter.cs" />
     <Compile Include="IO\Endianness.cs" />
     <Compile Include="TagCompound.cs" />
     <Compile Include="TagList.cs" />
@@ -47,6 +45,8 @@
     <Compile Include="Text\NbtFormatterJson.cs" />
     <Compile Include="Utility\TagTypeHelper.cs" />
     <Compile Include="Text\MUTF8Encoding.cs" />
+    <Compile Include="IO\NBTStreamWriter.cs" />
+    <Compile Include="IO\NBTStreamReader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
