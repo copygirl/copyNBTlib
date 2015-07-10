@@ -159,8 +159,7 @@ namespace copyNBTlib
 				var type = reader.ReadTagType();
 				if (ensureCompound && (type != TagType.Compound))
 					throw new InvalidDataException("Root tag is not a compound");
-				name = reader.ReadString();
-				return reader.ReadTag(type);
+				return reader.ReadTag(type, out name);
 			}
 		}
 

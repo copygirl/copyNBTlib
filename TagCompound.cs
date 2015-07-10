@@ -19,12 +19,13 @@ namespace copyNBTlib
 		{
 			Clear();
 			TagType type;
+			string name;
 			while ((type = reader.ReadTagType(true)) != TagType.End) {
-				var name = reader.ReadString();
+				var tag = reader.ReadTag(type, out name);
 				if (ContainsKey(name))
 					throw new InvalidDataException(string.Format(
 						"Multiple occurance of key '{0}' in compound", name));
-				this[name] = reader.ReadTag(type);
+				this[name] = tag;
 			}
 		}
 
