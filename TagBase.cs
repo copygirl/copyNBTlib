@@ -201,7 +201,6 @@ namespace copyNBTlib
 			if (ensureCompound && (Type != TagType.Compound))
 				throw new NotSupportedException("Root tag is not a compound");
 
-			// FIXME: If compression is none, stream is disposed.
 			using (stream = compression.Compress(stream))
 			using (var writer = new EndianBinaryWriter(stream, endianness))
 				Write(writer, name);
