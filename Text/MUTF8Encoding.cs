@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 
 namespace copyNBTlib.Text
 {
@@ -64,17 +65,12 @@ namespace copyNBTlib.Text
 		public override int GetCharCount(byte[] bytes, int index, int count)
 		{
 			int charCount = 0;
-			for (int i = index; i < index + count; i++) {
+			for (int i = index; i < index + count; charCount++) {
 				byte b = bytes[i];
-				if ((b & 0xF) == 0)
-					charCount++;
-				else if ((b & 0xE0) == 0xC0) {
-					charCount += 2;
-					i++;
-				} else if ((b & 0xF0) == 0xE0) {
-					charCount += 3;
-					i += 2;
-				}
+				if ((b & 0x80) == 0) i += 1;
+				else if ((b & 0xE0) == 0xC0) i += 2;
+				else if ((b & 0xF0) == 0xE0) i += 3;
+				else throw new InvalidDataException("Invalid MUTF-8 format");
 			}
 			return charCount;
 		}
@@ -84,7 +80,7 @@ namespace copyNBTlib.Text
 			int startCharIndex = charIndex;
 			for (int i = byteIndex; i < byteIndex + byteCount; i++) {
 				byte b = bytes[i];
-				if ((b & 0xF) == 0)
+				if ((b & 0x80) == 0)
 					chars[charIndex++] = (char)b;
 				else if ((b & 0xE0) == 0xC0)
 					chars[charIndex++] = (char)(
@@ -95,7 +91,7 @@ namespace copyNBTlib.Text
 						(b & 0x0F) << 12 |
 						(bytes[++i] & 0x3F) << 6 |
 						bytes[++i] & 0x3F);
-				// else, the encoding was invalid.
+				else throw new InvalidDataException("Invalid MUTF-8 format");
 			}
 			return (charIndex - startCharIndex);
 		}
