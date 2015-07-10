@@ -5,6 +5,10 @@ using copyNBTlib.Utility;
 
 namespace copyNBTlib.IO
 {
+	/// <summary>
+	/// Utility class for reading NBT tags from a stream.
+	/// Allows specifying endianness of the source data.
+	/// </summary>
 	public class NBTStreamReader
 	{
 		readonly byte[] _buffer = new byte[256];
@@ -30,6 +34,8 @@ namespace copyNBTlib.IO
 			Endianness = endianness;
 		}
 
+		#region Basic read operations
+
 		public byte[] Read(int count)
 		{
 			var buffer = _buffer;
@@ -39,6 +45,11 @@ namespace copyNBTlib.IO
 				throw new EndOfStreamException();
 			return buffer;
 		}
+
+		/// <summary>
+		/// Reads a number of bytes, and if the host endianness is not
+		/// the same as the source endianness, reverses the bytes read.
+		/// </summary>
 		byte[] ReadEndian(int count)
 		{
 			var buffer = Read(count);
@@ -46,6 +57,10 @@ namespace copyNBTlib.IO
 				Array.Reverse(buffer, 0, count);
 			return buffer;
 		}
+
+		#endregion
+
+		#region Read primitive values
 
 		public   byte ReadByte()   { return Read(sizeof(byte))[0]; }
 		public  short ReadShort()  { return BitConverter. ToInt16(ReadEndian(sizeof( short)), 0); }
@@ -64,6 +79,9 @@ namespace copyNBTlib.IO
 			return Encoding.GetString(Read(length), 0, length);
 		}
 
+		#endregion
+
+		#region Read NBT tags
 
 		public TagType ReadTagType(bool allowEndTag = false)
 		{
@@ -73,7 +91,6 @@ namespace copyNBTlib.IO
 					"Invalid NBT tag type 0x{0:X}", type));
 			return type;
 		}
-
 
 		/// <summary>
 		/// Reads an NBT tag of a given tag type and its name.
@@ -96,6 +113,8 @@ namespace copyNBTlib.IO
 			tag.ReadPayload(this);
 			return tag;
 		}
+
+		#endregion
 	}
 }
 

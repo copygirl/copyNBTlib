@@ -13,6 +13,10 @@ namespace copyNBTlib.Compression
 		public abstract Stream Compress(Stream stream);
 		public abstract Stream Decompress(Stream stream);
 
+		/// <summary>
+		/// Attempts to auto-detect the compression used.
+		/// </summary>
+		/// <exception cref="NotSupportedException">Thrown when stream doesn't support seeking.</exception>
 		public static NbtCompression AutoDetect(Stream stream)
 		{
 			if (!stream.CanSeek)
@@ -27,12 +31,15 @@ namespace copyNBTlib.Compression
  			throw new InvalidDataException("Couldn't auto-detect NBT compression, invalid magic numbers");
 		}
 
+		#region NoCompression class
 
 		class NoCompression : NbtCompression
 		{
 			public override Stream Compress(Stream stream) { return new LeaveOpenWrapper(stream); }
 			public override Stream Decompress(Stream stream) { return new LeaveOpenWrapper(stream); }
 
+			// Wrapper is needed so the wrapped stream isn't
+			// closed when the compression stream is disposed.
 			class LeaveOpenWrapper : Stream
 			{
 				readonly Stream _base;
@@ -56,6 +63,10 @@ namespace copyNBTlib.Compression
 			}
 		}
 
+		#endregion
+
+		#region GZipCompression class
+
 		class GZipCompression : NbtCompression
 		{
 			public override Stream Compress(Stream stream)
@@ -67,6 +78,8 @@ namespace copyNBTlib.Compression
 				return new GZipStream(stream, CompressionMode.Decompress, false);
 			}
 		}
+
+		#endregion
 	}
 }
 

@@ -5,6 +5,10 @@ using copyNBTlib.Utility;
 
 namespace copyNBTlib.IO
 {
+	/// <summary>
+	/// Utility class for writing NBT tags to a stream.
+	/// Allows specifying the endianness of the output data.
+	/// </summary>
 	public class NBTStreamWriter
 	{
 		public Stream BaseStream { get; private set; }
@@ -28,16 +32,27 @@ namespace copyNBTlib.IO
 			Endianness = endianness;
 		}
 
+		#region Base write operations
+
 		public void Write(byte[] array)
 		{
 			BaseStream.Write(array, 0, array.Length);
 		}
+
+		/// <summary>
+		/// Writes some bytes. If the output endianness is not
+		/// the same as the host endianness, reverses the bytes.
+		/// </summary>
 		void WriteEndian(byte[] array)
 		{
 			if (BitConverter.IsLittleEndian && (Endianness != Endianness.Little))
 				Array.Reverse(array, 0, array.Length);
 			Write(array);
 		}
+
+		#endregion
+
+		#region Write primitive values
 
 		public void Write(  byte value) { BaseStream.WriteByte(value); }
 		public void Write( short value) { WriteEndian(BitConverter.GetBytes(value)); }
@@ -60,6 +75,9 @@ namespace copyNBTlib.IO
 			Write(buffer);
 		}
 
+		#endregion
+
+		#region Write NBT tags
 
 		public void Write(TagType type, bool allowEndTag = false)
 		{
@@ -83,6 +101,8 @@ namespace copyNBTlib.IO
 			Write(name);
 			tag.WritePayload(this);
 		}
+
+		#endregion
 	}
 }
 

@@ -14,7 +14,6 @@ namespace copyNBTlib
 	{
 		public TagType Type { get; private set; }
 
-
 		internal TagBase(TagType type)
 		{
 			Type = type;
@@ -276,10 +275,13 @@ namespace copyNBTlib
 
 		/// <summary>
 		/// Returns a JSON string containing the value for this tag.
+		/// 
 		/// Simple tag primitives will simply return the value.
 		/// Tag strings will return a quoted, escaped string.
 		/// Tag arrays and lists will return JSON arrays.
 		/// Tag compounds will return JSON objects.
+		/// 
+		/// Due to type information being lost, JSON can't be turned back into NBT.
 		/// </summary>
 		public string ToJson(bool pretty = false)
 		{

@@ -28,7 +28,7 @@ namespace copyNBTlib
 
 		/// <summary>
 		/// Gets or sets the type of tags in the list.
-		/// Returns the type of the list if it's not dynamic or the type of its elements if it's
+		/// Returns the type of the list if it's not dynamic or the type of its elements if it is
 		/// dynamic (null if empty). Can't change the type of the list while it contains elements.
 		/// </summary>
 		public TagType? ListType {

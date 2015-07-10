@@ -4,6 +4,7 @@ namespace copyNBTlib
 	public enum TagType : byte
 	{
 		End       = 0x00,
+
 		Byte      = 0x01,
 		Short     = 0x02,
 		Int       = 0x03,
