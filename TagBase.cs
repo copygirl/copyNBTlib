@@ -335,7 +335,7 @@ namespace copyNBTlib
 		/// </summary>
 		Exception MakeShorthandNSE(params TagType[] expectedTypes)
 		{
-			return MakeShorthandNSE(expectedTypes);
+			return MakeShorthandNSE((IEnumerable<TagType>)expectedTypes);
 		}
 
 		#endregion
